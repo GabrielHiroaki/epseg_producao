@@ -160,22 +160,6 @@
 
   <!-- TELA INICIAL -->
   <div id="home">
-  <!-- TELA DO MÊS -->
-  <div id="mesView" class="hidden">
-    <h2 id="tituloMes"></h2>
-
-  <div class="card">
-    <h3>Adicionar Registro</h3>
-    <input id="identificador" placeholder="Identificador">
-    <input id="nome" placeholder="Nome">
-    <input id="comissao" placeholder="% Comissão">
-    <input id="valor" placeholder="Valor Líquido">
-    <input id="letra" placeholder="Inicial Vendedor">
-    <input id="ramo" placeholder="Ramo">
-    <input id="companhia" placeholder="Companhia">
-    <button onclick="salvar()">Salvar</button>
-  </div> <!-- ✅ FECHA AQUI -->
-    
     <!-- Filtros -->
     <div class="card">
       <h3>Filtros</h3>
@@ -298,7 +282,23 @@
     </div>
 
   </div> <!-- FIM HOME -->
+  
+  <!-- TELA DO MÊS -->
+  <div id="mesView" class="hidden">
+    <h2 id="tituloMes"></h2>
 
+  <div class="card">
+    <h3>Adicionar Registro</h3>
+    <input id="identificador" placeholder="Identificador">
+    <input id="nome" placeholder="Nome">
+    <input id="comissao" placeholder="% Comissão">
+    <input id="valor" placeholder="Valor Líquido">
+    <input id="letra" placeholder="Inicial Vendedor">
+    <input id="ramo" placeholder="Ramo">
+    <input id="companhia" placeholder="Companhia">
+    <button onclick="salvar()">Salvar</button>
+  </div> <!-- ✅ FIM MES VIEW -->
+    
   <!-- PAINEL DE ANÁLISE -->
   <div id="analiseView" class="hidden">
     <h2>Painel de Análise</h2>
