@@ -233,7 +233,7 @@
             <th>Comissão R$</th>
           </tr>
         </thead>
-        <tbody id="resumoVendedor"></tbody>
+        <tbody id="resumoVendedorInicial"></tbody>
       </table>
     </div>
 
@@ -247,7 +247,7 @@
             <th>Total no Mês</th>
           </tr>
         </thead>
-        <tbody id="resumoCompanhia"></tbody>
+        <tbody id="resumoCompanhiaInicial"></tbody>
       </table>
     </div>
   
@@ -478,7 +478,7 @@
   }
 
 
-  const resumoCompanhia = document.getElementById("resumoCompanhia");
+  const resumoCompanhiaInicial = document.getElementById("resumoCompanhiaInicial");
 
   function carregarResumoCompanhia() {
     const ano = document.getElementById("ano").value;
@@ -523,7 +523,7 @@
     });
   }
 
-  const resumoVendedor = document.getElementById("resumoVendedor");
+  const resumoVendedorInicial = document.getElementById("resumoVendedorInicial");
   async function carregarAnaliseAno() {
     const ano = document.getElementById("ano").value;
   
@@ -597,69 +597,86 @@
     const ano = document.getElementById("ano").value;
     const mes = document.getElementById("mes").value;
     const filtro = document.getElementById("filtroVendedor").value;
-
+  
     if (!ano || !mes) return;
-
+  
     const ref = collection(db, "dados", ano, "meses", mes, "registros");
-
-    const nomesVendedores = {
-      "P": "Paulino",
-      "E": "Eduardo",
-      "S": "Sueli",
-      "J": "Juliana",
-      "WI": "Willian",
-      "MI": "Minoru",
-      "T": "Tatiana",
-      "R": "Rosana",
-      "JR": "Junior"
-    };
-
-    if (unsubscribeResumoVendedor) {
-      unsubscribeResumoVendedor();
-    }
-
+  
+    if (unsubscribeResumoVendedor) unsubscribeResumoVendedor();
+  
     unsubscribeResumoVendedor = onSnapshot(ref, (snapshot) => {
       let vendedores = {};
-
+      const nomesVendedores = {
+        "P": "Paulino", "E": "Eduardo", "S": "Sueli",
+        "J": "Juliana", "WI": "Willian", "MI": "Minoru",
+        "T": "Tatiana", "R": "Rosana", "JR": "Junior"
+      };
+  
       snapshot.forEach(doc => {
         const d = doc.data();
         const letra = (d.letra || "").toUpperCase().trim();
-
         if (filtro && letra !== filtro) return;
-
+  
         const vendedor = nomesVendedores[letra] || letra || "Sem vendedor";
-
         const valor = parseNumero(d.valor);
         const comissao = parseNumero(d.comissao);
-        const valorComissao = calcularComissao(
-          valor,
-          comissao,
-          letra,
-          d.ano,
-          d.mes
-        );
-
-        if (!vendedores[vendedor]) {
-          vendedores[vendedor] = {
-            total: 0,
-            comissao: 0
-          };
-        }
-
+        const valorComissao = calcularComissao(valor, comissao, letra, d.ano, d.mes);
+  
+        if (!vendedores[vendedor]) vendedores[vendedor] = { total: 0, comissao: 0 };
+  
         vendedores[vendedor].total += valor;
         vendedores[vendedor].comissao += valorComissao;
       });
-
-      resumoVendedor.innerHTML = "";
-
+  
+      // **Aqui usamos o ID do menu inicial**
+      resumoVendedorInicial.innerHTML = "";
+  
       Object.keys(vendedores)
         .sort((a, b) => vendedores[b].total - vendedores[a].total)
         .forEach(v => {
-          resumoVendedor.innerHTML += `
+          resumoVendedorInicial.innerHTML += `
             <tr>
               <td>${v}</td>
               <td>${formatarMoeda(vendedores[v].total)}</td>
               <td>${formatarMoeda(vendedores[v].comissao)}</td>
+            </tr>
+          `;
+        });
+    });
+  }
+  
+  function carregarResumoCompanhiaInicial() {
+    const ano = document.getElementById("ano").value;
+    const mes = document.getElementById("mes").value;
+    const filtro = document.getElementById("filtroVendedor").value;
+  
+    if (!ano || !mes) return;
+  
+    const ref = collection(db, "dados", ano, "meses", mes, "registros");
+  
+    onSnapshot(ref, (snapshot) => {
+      let companhias = {};
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const letra = (d.letra || "").toUpperCase().trim();
+        if (filtro && letra !== filtro) return;
+  
+        const comp = (d.companhia || "Sem companhia").toUpperCase().trim();
+        if (!companhias[comp]) companhias[comp] = 0;
+  
+        companhias[comp] += parseNumero(d.valor);
+      });
+  
+      // **Aqui usamos o ID do menu inicial**
+      resumoCompanhiaInicial.innerHTML = "";
+  
+      Object.keys(companhias)
+        .sort((a, b) => companhias[b] - companhias[a])
+        .forEach((c, i) => {
+          resumoCompanhiaInicial.innerHTML += `
+            <tr style="${i === 0 ? 'color:#22c55e; font-weight:bold;' : ''}">
+              <td>${c}</td>
+              <td>${formatarMoeda(companhias[c])}</td>
             </tr>
           `;
         });
