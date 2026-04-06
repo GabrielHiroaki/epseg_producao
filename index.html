@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Seguros</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    background: #0f172a; /* fundo escuro */
+    color: #e2e8f0;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(90deg, #0f172a, #1e293b);
+    color: #38bdf8;
+    padding: 18px 25px;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  /* CONTAINER */
+  .container {
+    padding: 25px;
+  }
+
+  /* CARDS */
+  .card {
+    background: #1e293b;
+    padding: 18px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+    border: 1px solid #334155;
+  }
+
+  /* TITULOS */
+  h2, h3 {
+    margin-top: 0;
+    color: #38bdf8;
+  }
+
+  /* INPUTS */
+  select, input {
+    margin: 5px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #e2e8f0;
+    outline: none;
+    transition: 0.2s;
+  }
+
+  select:focus, input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56,189,248,0.2);
+  }
+
+  /* BOTÕES */
+  button {
+    margin: 5px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(56,189,248,0.3);
+  }
+
+  /* TABELA */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    background: #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #334155;
+  }
+
+  th, td {
+    border-bottom: 1px solid #334155;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background: #0f172a;
+    color: #38bdf8;
+    font-weight: bold;
+  }
+
+  tr:hover {
+    background: rgba(56,189,248,0.05);
+  }
+
+  /* EDITÁVEL */
+  td[contenteditable="true"] {
+    background: #020617;
+    border-radius: 4px;
+  }
+
+  /* BOTÃO DELETE */
+  .delete-btn {
+    color: #f87171;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: 0.2s;
+  }
+
+  .delete-btn:hover {
+    color: #ef4444;
+    transform: scale(1.2);
+  }
+
+  /* ESCONDER */
+  .hidden {
+    display: none;
+  }
+
+  /* SCROLL BONITO */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #020617;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+  </style>
+</head>
+<body>
+
+<header>EP SEG CORRETORA DE SEGUROS LTDA ME - CONTROLE DE PRODUÇÃO</header>
+
+<div class="container">
+
+  <!-- 🔥 TELA INICIAL -->
+  <div id="home">
+
+    <div class="card">
+      <h3>Período</h3>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        
+        <div>
+          <label>Ano</label><br>
+          <select id="ano"></select>
+        </div>
+
+        <div>
+          <label>Mês</label><br>
+          <select id="mes">
+            <option value="01">Janeiro</option>
+            <option value="02">Fevereiro</option>
+            <option value="03">Março</option>
+            <option value="04">Abril</option>
+            <option value="05">Maio</option>
+            <option value="06">Junho</option>
+            <option value="07">Julho</option>
+            <option value="08">Agosto</option>
+            <option value="09">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+
+        <div style="margin-top:18px;">
+          <button onclick="entrarMes()">Abrir</button>
+        </div>
+
+      </div>
+    </div>
+    <div class="card">
+      <h3>Importar Excel</h3>
+      <input type="file" id="arquivoExcel" accept=".xlsx, .xls">
+      <button onclick="importarExcel()">Importar Excel</button>
+    </div>
+    <div class="card">
+      <h3>Resumo por Mês</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Total Valor</th>
+          </tr>
+        </thead>
+        <tbody id="resumo"></tbody>
+      </table>
+    </div>
+
+  </div> <!-- 🔥 FIM HOME -->
+
+    <div class="card">
+      <h3>Filtro por Vendedor</h3>
+
+      <select id="filtroVendedor">
+        <option value="">Todos</option>
+        <option value="P">Paulino</option>
+        <option value="E">Eduardo</option>
+        <option value="S">Sueli</option>
+        <option value="J">Juliana</option>
+        <option value="WI">Willian</option>
+        <option value="MI">Minoru</option>
+        <option value="MI">Junior</option>
+        <option value="MI">Rosana</option>
+        <option value="T">Tatiana</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h3>Total por Vendedor</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th>Total no Mês</th>
+            <th>Comissão R$</th>
+          </tr>
+        </thead>
+        <tbody id="resumoVendedor"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Total por Companhia</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Companhia</th>
+            <th>Total no Mês</th>
+          </tr>
+        </thead>
+        <tbody id="resumoCompanhia"></tbody>
+      </table>
+    </div>
+
+  <!-- 🔥 TELA DO MÊS -->
+  <div id="mesView" class="hidden">
+    <h2 id="tituloMes"></h2>
+
+    <div class="card">
+      <h3>Adicionar Registro</h3>
+      <input id="identificador" placeholder="Identificador">
+      <input id="nome" placeholder="Nome">
+      <input id="comissao" placeholder="% Comissão">
+      <input id="valor" placeholder="Valor Líquido">
+      <input id="letra" placeholder="Inicial Vendedor">
+      <input id="ramo" placeholder="Ramo">
+      <input id="companhia" placeholder="Companhia">
+      <button onclick="salvar()">Salvar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Segurado</th>
+          <th>%</th>
+          <th>Valor</th>
+          <th>Produtor</th>
+          <th>Ramo</th>
+          <th>Companhia</th>
+          <th>Comissão R$</th>
+          <th>X</th>
+        </tr>
+      </thead>
+      <tbody id="tabela"></tbody>
+    </table>
+
+    <button onclick="voltar()">Voltar</button>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnoi88rFaDzEbaWabfCgWlYhe5SJ6q6PQ",
+    authDomain: "epseg-controle.firebaseapp.com",
+    projectId: "epseg-controle",
+    storageBucket: "epseg-controle.firebasestorage.app",
+    messagingSenderId: "518851666796",
+    appId: "1:518851666796:web:d9867f74b3c93ad83a8949",
+    measurementId: "G-GS9KT2VZZH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let caminho = "";
+  let ultimoIdentificador = "";
+  let unsubscribeResumoVendedor = null;
+
+  const anoSelect = document.getElementById("ano");
+  const resumo = document.getElementById("resumo");
+
+  for (let i = 2019; i <= 2028; i++) {
+    let opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i;
+    anoSelect.appendChild(opt);
+  }
+
+  anoSelect.addEventListener("change", () => {
+    carregarResumo();
+    carregarResumoVendedor();
+    carregarResumoCompanhia(); 
+    salvarEstado();
+  });
+
+  document.getElementById("mes").addEventListener("change", () => {
+    carregarResumoVendedor();
+    carregarResumoCompanhia(); 
+    salvarEstado();
+  });
+
+  document.getElementById("filtroVendedor").addEventListener("change", () => {
+    carregarResumoVendedor();
+    carregarResumoCompanhia();
+    carregar();
+    salvarEstado();
+  });
+
+  function salvarEstado() {
+    localStorage.setItem("ano", document.getElementById("ano").value);
+    localStorage.setItem("mes", document.getElementById("mes").value);
+    localStorage.setItem("filtroVendedor", document.getElementById("filtroVendedor").value);
+
+    // salva se estava dentro do mês
+    const dentroMes = !document.getElementById("mesView").classList.contains("hidden");
+    localStorage.setItem("dentroMes", dentroMes);
+  }
+
+
+  const resumoCompanhia = document.getElementById("resumoCompanhia");
+
+  function carregarResumoCompanhia() {
+    const ano = document.getElementById("ano").value;
+    const mes = document.getElementById("mes").value;
+    const filtro = document.getElementById("filtroVendedor").value;
+
+    if (!ano || !mes) return;
+
+    const ref = collection(db, "dados", ano, "meses", mes, "registros");
+
+    onSnapshot(ref, (snapshot) => {
+      let companhias = {};
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const letra = (d.letra || "").toUpperCase().trim();
+
+        // 🔥 FILTRO POR VENDEDOR
+        if (filtro && letra !== filtro) return;
+
+        const comp = (d.companhia || "Sem companhia").toUpperCase().trim();
+
+        if (!companhias[comp]) {
+          companhias[comp] = 0;
+        }
+
+        companhias[comp] += parseNumero(d.valor);
+      });
+
+      resumoCompanhia.innerHTML = "";
+
+      Object.keys(companhias)
+        .sort((a, b) => companhias[b] - companhias[a])
+        .forEach((c, i) => {
+          resumoCompanhia.innerHTML += `
+            <tr style="${i === 0 ? 'color:#22c55e; font-weight:bold;' : ''}">
+              <td>${c}</td>
+              <td>R$ ${companhias[c].toFixed(2)}</td>
+            </tr>
+          `;
+        });
+    });
+  }
+
+  const resumoVendedor = document.getElementById("resumoVendedor");
+
+  function carregarResumoVendedor() {
+    const ano = document.getElementById("ano").value;
+    const mes = document.getElementById("mes").value;
+    const filtro = document.getElementById("filtroVendedor").value;
+
+    if (!ano || !mes) return;
+
+    const ref = collection(db, "dados", ano, "meses", mes, "registros");
+
+    const nomesVendedores = {
+      "P": "Paulino",
+      "E": "Eduardo",
+      "S": "Sueli",
+      "J": "Juliana",
+      "WI": "Willian",
+      "MI": "Minoru",
+      "T": "Tatiana",
+      "R": "Rosana",
+      "JR": "Junior"
+    };
+
+    // 🔥 REMOVE LISTENER ANTIGO
+    if (unsubscribeResumoVendedor) {
+      unsubscribeResumoVendedor();
+    }
+
+    // 🔥 CRIA NOVO
+    unsubscribeResumoVendedor = onSnapshot(ref, (snapshot) => {
+      let vendedores = {};
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const letra = (d.letra || "").toUpperCase().trim();
+
+        if (filtro && letra !== filtro) return;
+
+        const vendedor = nomesVendedores[letra] || letra || "Sem vendedor";
+
+        const valor = parseNumero(d.valor);
+        const comissao = parseNumero(d.comissao);
+        const valorComissao = calcularComissao(
+          valor,
+          comissao,
+          letra,
+          d.ano,
+          d.mes
+        );
+
+        if (!vendedores[vendedor]) {
+          vendedores[vendedor] = {
+            total: 0,
+            comissao: 0
+          };
+        }
+
+        vendedores[vendedor].total += valor;
+        vendedores[vendedor].comissao += valorComissao;
+      });
+
+      resumoVendedor.innerHTML = "";
+
+      Object.keys(vendedores)
+        .sort((a, b) => vendedores[b].total - vendedores[a].total)
+        .forEach(v => {
+          resumoVendedor.innerHTML += `
+            <tr>
+              <td>${v}</td>
+              <td>R$ ${vendedores[v].total.toFixed(2)}</td>
+              <td>R$ ${vendedores[v].comissao.toFixed(2)}</td>
+            </tr>
+          `;
+        });
+    });
+  }
+
+  function parseNumero(valor) {
+    if (valor === null || valor === undefined || valor === "") return 0;
+
+    // 🔥 SE JÁ FOR NÚMERO, RETORNA DIRETO
+    if (typeof valor === "number") return valor;
+
+    let str = valor.toString().trim();
+
+    // remove R$, espaços, etc
+    str = str.replace(/[^\d.,-]/g, "");
+
+    // 🔥 CASO BR (tem vírgula)
+    if (str.includes(",")) {
+      return Number(
+        str
+          .replace(/\./g, "") // remove milhar
+          .replace(",", ".")  // decimal
+      );
+    }
+
+    // 🔥 CASO EN (só ponto, já é decimal)
+    return Number(str);
+  }
+
+  function calcularComissao(valor, comissao, letra, anoRegistro, mesRegistro) {
+    const percentual = comissao / 100;
+
+    // 🔥 FALLBACK (ESSA É A CORREÇÃO)
+    if (!anoRegistro || !mesRegistro) {
+      anoRegistro = Number(document.getElementById("ano").value);
+      mesRegistro = Number(document.getElementById("mes").value);
+    }
+
+    let fator = 0.65;
+
+    // 🔥 REGRA PAULINO
+    if (letra.toUpperCase().trim() === "P") {
+      if (anoRegistro < 2022 || (anoRegistro === 2022 && mesRegistro <= 5)) {
+        fator = 0.70;
+      } else {
+        fator = 0.65;
+      }
+    }
+
+    // 🔥 REGRA TATIANA
+    if (letra.toUpperCase().trim() === "T") {
+      fator = 0.5;
+    }
+
+    return valor * percentual * fator;
+  }
+
+  function carregarResumo() {
+    const ano = anoSelect.value;
+    resumo.innerHTML = "";
+
+    for (let m = 1; m <= 12; m++) {
+      const mes = String(m).padStart(2, '0');
+      const ref = collection(db, "dados", ano, "meses", mes, "registros");
+
+      onSnapshot(ref, (snapshot) => {
+        let total = 0;
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          total += parseNumero(d.valor);
+        });
+
+        let row = document.getElementById("resumo-" + mes);
+
+        if (!row) {
+          row = document.createElement("tr");
+          row.id = "resumo-" + mes;
+          resumo.appendChild(row);
+        }
+
+        row.innerHTML = `<td>${mes}</td><td>R$ ${total.toFixed(2)}</td>`;
+      });
+    }
+  }
+
+  window.entrarMes = function() {
+    const ano = document.getElementById("ano").value;
+    const mes = document.getElementById("mes").value;
+
+    if (!ano || !mes) {
+      alert("Selecione ano e mês!");
+      return;
+    }
+
+    caminho = collection(db, "dados", ano, "meses", mes, "registros");
+
+    // 🔥 ESCONDE HOME
+    document.getElementById("home").classList.add("hidden");
+
+    // 🔥 MOSTRA TELA DO MÊS
+    document.getElementById("mesView").classList.remove("hidden");
+
+    document.getElementById("tituloMes").innerText = `Mês: ${mes}/${ano}`;
+
+    carregar();
+    salvarEstado();
+  }
+
+  window.voltar = function() {
+    document.getElementById("mesView").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+    salvarEstado();
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !document.getElementById("mesView").classList.contains("hidden")) {
+      salvar();
+    }
+  });
+
+  function validar() {
+    if (!identificador.value || !nome.value || !comissao.value || !valor.value || !letra.value || !companhia.value) {
+      alert("Preencha todos os campos!");
+      return false;
+    }
+
+    if (!Number.isInteger(Number(identificador.value))) return alert("ID inválido"), false;
+
+    if (isNaN(parseNumero(comissao.value))) return alert("Comissão inválida"), false;
+    if (isNaN(parseNumero(valor.value))) return alert("Valor inválido"), false;
+
+    return true;
+  }
+
+  window.salvar = async function() {
+    if (!validar()) return;
+
+    const idAtual = Number(identificador.value);
+    const ano = Number(document.getElementById("ano").value);
+    const mes = Number(document.getElementById("mes").value);
+    await addDoc(caminho, {
+      identificador: idAtual,
+      nome: nome.value,
+      comissao: parseNumero(comissao.value),
+      valor: parseNumero(valor.value),
+      letra: letra.value,
+      companhia: companhia.value,
+      ramo: ramo.value,
+      ano: ano,  
+      mes: mes,
+      criadoEm: Date.now()
+    });
+
+    // 🔥 incrementa pro próximo automaticamente
+    ultimoIdentificador = idAtual + 1;
+
+    // limpa campos (menos o ID)
+    nome.value = "";
+    comissao.value = "";
+    valor.value = "";
+    letra.value = "";
+    companhia.value = "";
+    ramo.value = "";
+
+    // já deixa o próximo ID pronto
+    identificador.value = ultimoIdentificador;
+  }
+
+  function carregar() {
+    const tabela = document.getElementById("tabela");
+    const filtro = document.getElementById("filtroVendedor").value;
+    onSnapshot(caminho, (snapshot) => {
+      tabela.innerHTML = "";
+
+      let docs = [];
+      snapshot.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+      docs.sort((a, b) => (a.criadoEm || 0) - (b.criadoEm || 0));
+
+      // 🔥 AQUI ESTÁ A CORREÇÃO REAL
+      if (docs.length > 0) {
+        const ultimo = Number(docs[docs.length - 1].identificador) || 0;
+        ultimoIdentificador = ultimo + 1;
+        document.getElementById("identificador").value = ultimoIdentificador;
+      } else {
+        ultimoIdentificador = "";
+        document.getElementById("identificador").value = "";
+      }
+
+      docs.forEach(d => {
+        const letra = (d.letra || "").toUpperCase().trim();
+
+        if (filtro && letra !== filtro) return;
+
+        const valor = parseNumero(d.valor);
+        const comissao = parseNumero(d.comissao);
+        const valorComissao = calcularComissao(
+          valor,
+          comissao,
+          letra,
+          d.ano,
+          d.mes
+        );
+
+        tabela.innerHTML += `
+          <tr data-id="${d.id}">
+            <td contenteditable="true" data-field="identificador">${d.identificador}</td>
+            <td contenteditable="true" data-field="nome">${d.nome}</td>
+            <td contenteditable="true" data-field="comissao">${d.comissao}</td>
+            <td contenteditable="true" data-field="valor">${d.valor}</td>
+            <td contenteditable="true" data-field="letra">${d.letra}</td>
+            <td contenteditable="true" data-field="ramo">${d.ramo || ""}</td>
+            <td contenteditable="true" data-field="companhia">${d.companhia}</td>
+            <td>R$ ${valorComissao.toFixed(2)}</td>
+            <td class="delete-btn" data-id="${d.id}">x</td>
+          </tr>
+        `;
+      });
+
+      // editar
+      document.querySelectorAll("td[contenteditable='true']").forEach(td => {
+        td.addEventListener("blur", async () => {
+          const tr = td.parentElement;
+          const id = tr.getAttribute("data-id");
+          const campo = td.getAttribute("data-field");
+          const valor = td.innerText;
+
+          await updateDoc(doc(caminho, id), {
+            [campo]: ["identificador","comissao","valor"].includes(campo)
+              ? parseNumero(valor)
+              : valor
+          });
+        });
+      });
+
+      // deletar
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (confirm("Excluir?")) await deleteDoc(doc(caminho, btn.dataset.id));
+        });
+      });
+    });
+  }
+
+    window.importarExcel = async function () {
+      const fileInput = document.getElementById("arquivoExcel");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Selecione um arquivo!");
+        return;
+      }
+
+      const ano = document.getElementById("ano").value;
+      const mes = document.getElementById("mes").value;
+
+      if (!ano || !mes) {
+        alert("Selecione ano e mês antes!");
+        return;
+      }
+      const anoNumero = Number(ano);
+      const mesNumero = Number(mes);
+      const reader = new FileReader();
+      
+      reader.onload = async function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, {
+          raw: true
+        });
+
+        const caminhoImport = collection(db, "dados", ano, "meses", mes, "registros");
+
+        let count = 0;
+
+        for (const linha of json) {
+          try {
+
+            let produtor = (linha.PRODUTOR || "").toUpperCase().trim();
+
+            if (produtor === "PAULINO") produtor = "P";
+            if (produtor === "EDUARDO") produtor = "E";
+            if (produtor === "SUELI") produtor = "S";
+            if (produtor === "JULIANA") produtor = "J";
+            if (produtor === "WILLIAN") produtor = "WI";
+            if (produtor === "MINORU") produtor = "MI";
+            if (produtor === "ROSANA") produtor = "R";
+            if (produtor === "JUNIOR") produtor = "JR";
+            if (produtor === "TATIANA") produtor = "T";
+
+            await addDoc(caminhoImport, {
+              identificador: Number(linha.ID || count + 1),
+              nome: linha.NOME || "",
+              comissao: Number(linha.COMISSAO || 0),
+              valor: parseNumero((linha.VALOR || "0").toString()),
+              letra: produtor, 
+              ramo: linha.RAMO || "",
+              companhia: linha.COMPANHIA || "",
+              ano: anoNumero,
+              mes: mesNumero,
+              criadoEm: Date.now()
+            });
+
+            count++;
+          } catch (err) {
+            console.error("Erro na linha:", linha, err);
+          }
+        }
+
+        alert(`Importação concluída! ${count} registros enviados 🚀`);
+      };
+
+      reader.readAsArrayBuffer(file);
+    };
+
+    window.addEventListener("load", () => {
+      const ano = localStorage.getItem("ano");
+      const mes = localStorage.getItem("mes");
+      const filtro = localStorage.getItem("filtroVendedor");
+      const dentroMes = localStorage.getItem("dentroMes") === "true";
+
+      if (ano) document.getElementById("ano").value = ano;
+      if (mes) document.getElementById("mes").value = mes;
+      if (filtro) document.getElementById("filtroVendedor").value = filtro;
+
+      carregarResumo();
+      carregarResumoVendedor();
+      carregarResumoCompanhia();
+
+      // 🔥 VOLTA DIRETO PRO MÊS
+      if (ano && mes && dentroMes) {
+        entrarMes();
+      }
+    });
+</script>
+
+</body>
+</html>
