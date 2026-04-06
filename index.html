@@ -160,39 +160,6 @@
 
   <!-- TELA INICIAL -->
   <div id="home">
-    <!-- Filtros -->
-    <div class="card">
-      <h3>Filtros</h3>
-      <input id="filtroVendedor" placeholder="Vendedor">
-      <input id="filtroID" placeholder="ID">
-      <input id="filtroNome" placeholder="Nome">
-      <input id="filtroRamo" placeholder="Ramo">
-      <input id="filtroCompanhia" placeholder="Companhia">
-    </div>
-  
-    <!-- Tabela -->
-    <div class="card">
-      <h3>Registros do Mês</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Comissão %</th>
-            <th>Valor</th>
-            <th>Letra</th>
-            <th>Ramo</th>
-            <th>Companhia</th>
-            <th>Comissão R$</th>
-            <th>Excluir</th>
-          </tr>
-        </thead>
-        <tbody id="tabela"></tbody>
-      </table>
-    </div>
-  
-    <button onclick="voltar()">Voltar</button>
-  </div>
     <!-- Período -->
     <div class="card">
       <h3>Período</h3>
@@ -286,7 +253,39 @@
   <!-- TELA DO MÊS -->
   <div id="mesView" class="hidden">
     <h2 id="tituloMes"></h2>
-
+    <!-- Filtros -->
+    <div class="card">
+      <h3>Filtros</h3>
+      <input id="filtroVendedor" placeholder="Vendedor">
+      <input id="filtroID" placeholder="ID">
+      <input id="filtroNome" placeholder="Nome">
+      <input id="filtroRamo" placeholder="Ramo">
+      <input id="filtroCompanhia" placeholder="Companhia">
+    </div>
+  
+    <!-- Tabela -->
+    <div class="card">
+      <h3>Registros do Mês</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Comissão %</th>
+            <th>Valor</th>
+            <th>Letra</th>
+            <th>Ramo</th>
+            <th>Companhia</th>
+            <th>Comissão R$</th>
+            <th>Excluir</th>
+          </tr>
+        </thead>
+        <tbody id="tabela"></tbody>
+      </table>
+    </div>
+  
+    <button onclick="voltar()">Voltar</button>
+  </div>
   <div class="card">
     <h3>Adicionar Registro</h3>
     <input id="identificador" placeholder="Identificador">
@@ -297,6 +296,7 @@
     <input id="ramo" placeholder="Ramo">
     <input id="companhia" placeholder="Companhia">
     <button onclick="salvar()">Salvar</button>
+    </div>
   </div> <!-- ✅ FIM MES VIEW -->
     
   <!-- PAINEL DE ANÁLISE -->
