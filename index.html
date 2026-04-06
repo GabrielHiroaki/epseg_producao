@@ -451,9 +451,10 @@
 
     if (!ano || !mes) return;
 
-    const ref = collection(db, "dados", ano, "meses", mes, "registros");
-
-    onSnapshot(ref, (snapshot) => {
+      const ref = collection(db, "dados", ano, "meses", mes, "registros");
+      if (unsubscribeResumoCompanhia) unsubscribeResumoCompanhia();
+      unsubscribeResumoCompanhia = onSnapshot(ref, (snapshot) => {
+        
       let companhias = {};
 
       snapshot.forEach(doc => {
@@ -1072,39 +1073,43 @@
         const caminhoImport = collection(db, "dados", ano, "meses", mes, "registros");
 
         let count = 0;
-
+        const promessas = [];
+        
         for (const linha of json) {
-          try {
-
-            let produtor = (linha.PRODUTOR || "").toUpperCase().trim();
-
-            if (produtor === "PAULINO") produtor = "P";
-            if (produtor === "EDUARDO") produtor = "E";
-            if (produtor === "SUELI") produtor = "S";
-            if (produtor === "JULIANA") produtor = "J";
-            if (produtor === "WILLIAN") produtor = "WI";
-            if (produtor === "MINORU") produtor = "MI";
-            if (produtor === "ROSANA") produtor = "R";
-            if (produtor === "JUNIOR") produtor = "JR";
-            if (produtor === "TATIANA") produtor = "T";
-
-            await addDoc(caminhoImport, {
+        
+          let produtor = (linha.PRODUTOR || "").toUpperCase().trim();
+        
+          if (produtor === "PAULINO") produtor = "P";
+          if (produtor === "EDUARDO") produtor = "E";
+          if (produtor === "SUELI") produtor = "S";
+          if (produtor === "JULIANA") produtor = "J";
+          if (produtor === "WILLIAN") produtor = "WI";
+          if (produtor === "MINORU") produtor = "MI";
+          if (produtor === "ROSANA") produtor = "R";
+          if (produtor === "JUNIOR") produtor = "JR";
+          if (produtor === "TATIANA") produtor = "T";
+        
+          promessas.push(
+            addDoc(caminhoImport, {
               identificador: Number(linha.ID || count + 1),
               nome: linha.NOME || "",
               comissao: Number(linha.COMISSAO || 0),
               valor: parseNumero((linha.VALOR || "0").toString()),
-              letra: produtor, 
+              letra: produtor,
               ramo: linha.RAMO || "",
               companhia: linha.COMPANHIA || "",
               ano: anoNumero,
               mes: mesNumero,
-              criadoEm: Date.now()
-            });
-
-            count++;
-          } catch (err) {
-            console.error("Erro na linha:", linha, err);
-          }
+              criadoEm: Date.now() + Math.random()
+            })
+          );
+        
+          count++;
+        }
+        
+        // 🔥 EXECUTA EM LOTES (EVITA QUOTA)
+        for (let i = 0; i < promessas.length; i += 50) {
+          await Promise.all(promessas.slice(i, i + 50));
         }
 
         alert(`Importação concluída! ${count} registros enviados 🚀`);
