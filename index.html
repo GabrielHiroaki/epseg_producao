@@ -213,7 +213,7 @@
       </table>
     </div>
 
-  </div> <!-- 🔥 FIM HOME -->
+  </div>
 
     <div class="card">
       <h3>Filtro por Vendedor</h3>
@@ -261,7 +261,6 @@
       </table>
     </div>
 
-  <!-- 🔥 TELA DO MÊS -->
   <div id="mesView" class="hidden">
     <h2 id="tituloMes"></h2>
 
@@ -429,12 +428,10 @@
       "JR": "Junior"
     };
 
-    // 🔥 REMOVE LISTENER ANTIGO
     if (unsubscribeResumoVendedor) {
       unsubscribeResumoVendedor();
     }
 
-    // 🔥 CRIA NOVO
     unsubscribeResumoVendedor = onSnapshot(ref, (snapshot) => {
       let vendedores = {};
 
@@ -486,7 +483,7 @@
   function parseNumero(valor) {
     if (valor === null || valor === undefined || valor === "") return 0;
 
-    // 🔥 SE JÁ FOR NÚMERO, RETORNA DIRETO
+    // SE JÁ FOR NÚMERO, RETORNA DIRETO
     if (typeof valor === "number") return valor;
 
     let str = valor.toString().trim();
@@ -494,7 +491,7 @@
     // remove R$, espaços, etc
     str = str.replace(/[^\d.,-]/g, "");
 
-    // 🔥 CASO BR (tem vírgula)
+    // CASO BR (tem vírgula)
     if (str.includes(",")) {
       return Number(
         str
@@ -503,14 +500,14 @@
       );
     }
 
-    // 🔥 CASO EN (só ponto, já é decimal)
+    // CASO EN (só ponto, já é decimal)
     return Number(str);
   }
 
   function calcularComissao(valor, comissao, letra, anoRegistro, mesRegistro) {
     const percentual = comissao / 100;
 
-    // 🔥 FALLBACK (ESSA É A CORREÇÃO)
+    // FALLBACK (ESSA É A CORREÇÃO)
     if (!anoRegistro || !mesRegistro) {
       anoRegistro = Number(document.getElementById("ano").value);
       mesRegistro = Number(document.getElementById("mes").value);
@@ -518,7 +515,7 @@
 
     let fator = 0.65;
 
-    // 🔥 REGRA PAULINO
+    // REGRA PAULINO
     if (letra.toUpperCase().trim() === "P") {
       if (anoRegistro < 2022 || (anoRegistro === 2022 && mesRegistro <= 5)) {
         fator = 0.70;
@@ -527,7 +524,7 @@
       }
     }
 
-    // 🔥 REGRA TATIANA
+    // REGRA TATIANA
     if (letra.toUpperCase().trim() === "T") {
       fator = 0.5;
     }
@@ -574,10 +571,10 @@
 
     caminho = collection(db, "dados", ano, "meses", mes, "registros");
 
-    // 🔥 ESCONDE HOME
+    // ESCONDE HOME
     document.getElementById("home").classList.add("hidden");
 
-    // 🔥 MOSTRA TELA DO MÊS
+    // MOSTRA TELA DO MÊS
     document.getElementById("mesView").classList.remove("hidden");
 
     document.getElementById("tituloMes").innerText = `Mês: ${mes}/${ano}`;
@@ -631,7 +628,7 @@
       criadoEm: Date.now()
     });
 
-    // 🔥 incrementa pro próximo automaticamente
+    // incrementa pro próximo automaticamente
     ultimoIdentificador = idAtual + 1;
 
     // limpa campos (menos o ID)
@@ -657,7 +654,7 @@
 
       docs.sort((a, b) => (a.criadoEm || 0) - (b.criadoEm || 0));
 
-      // 🔥 AQUI ESTÁ A CORREÇÃO REAL
+      // AQUI ESTÁ A CORREÇÃO REAL
       if (docs.length > 0) {
         const ultimo = Number(docs[docs.length - 1].identificador) || 0;
         ultimoIdentificador = ultimo + 1;
@@ -809,7 +806,7 @@
       carregarResumoVendedor();
       carregarResumoCompanhia();
 
-      // 🔥 VOLTA DIRETO PRO MÊS
+      // VOLTA DIRETO PRO MÊS
       if (ano && mes && dentroMes) {
         entrarMes();
       }
