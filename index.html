@@ -227,11 +227,23 @@
         <option value="J">Juliana</option>
         <option value="WI">Willian</option>
         <option value="MI">Minoru</option>
-        <option value="MI">Junior</option>
-        <option value="MI">Rosana</option>
+        <option value="JR">Junior</option>
+        <option value="R">Rosana</option>
         <option value="T">Tatiana</option>
       </select>
     </div>
+
+      <div class="card">
+        <h3>Filtros Avançados</h3>
+      
+        <input id="filtroID" placeholder="Filtrar por ID">
+      
+        <input id="filtroNome" placeholder="Filtrar por Nome">
+      
+        <input id="filtroRamo" placeholder="Filtrar por Ramo">
+      
+        <input id="filtroCompanhia" placeholder="Filtrar por Companhia">
+      </div>
 
     <div class="card">
       <h3>Total por Vendedor</h3>
@@ -350,12 +362,25 @@
     salvarEstado();
   });
 
+  ["filtroID","filtroNome","filtroRamo","filtroCompanhia"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      carregar();
+      carregarResumoVendedor();
+      carregarResumoCompanhia();
+      salvarEstado();
+    });
+  });
+
   function salvarEstado() {
     localStorage.setItem("ano", document.getElementById("ano").value);
     localStorage.setItem("mes", document.getElementById("mes").value);
     localStorage.setItem("filtroVendedor", document.getElementById("filtroVendedor").value);
-
-    // salva se estava dentro do mês
+  
+    localStorage.setItem("filtroID", document.getElementById("filtroID").value);
+    localStorage.setItem("filtroNome", document.getElementById("filtroNome").value);
+    localStorage.setItem("filtroRamo", document.getElementById("filtroRamo").value);
+    localStorage.setItem("filtroCompanhia", document.getElementById("filtroCompanhia").value);
+  
     const dentroMes = !document.getElementById("mesView").classList.contains("hidden");
     localStorage.setItem("dentroMes", dentroMes);
   }
@@ -670,7 +695,11 @@
 
   function carregar() {
     const tabela = document.getElementById("tabela");
-    const filtro = document.getElementById("filtroVendedor").value;
+    const filtroVendedor = document.getElementById("filtroVendedor").value;
+    const filtroID = document.getElementById("filtroID").value.trim();
+    const filtroNome = document.getElementById("filtroNome").value.toLowerCase().trim();
+    const filtroRamo = document.getElementById("filtroRamo").value.toLowerCase().trim();
+    const filtroCompanhia = document.getElementById("filtroCompanhia").value.toLowerCase().trim();
     onSnapshot(caminho, (snapshot) => {
       tabela.innerHTML = "";
 
@@ -692,7 +721,20 @@
       docs.forEach(d => {
         const letra = (d.letra || "").toUpperCase().trim();
 
-        if (filtro && letra !== filtro) return;
+        // FILTRO VENDEDOR
+        if (filtroVendedor && letra !== filtroVendedor) return;
+        
+        // FILTRO ID
+        if (filtroID && String(d.identificador) !== filtroID) return;
+        
+        // FILTRO NOME
+        if (filtroNome && !(d.nome || "").toLowerCase().includes(filtroNome)) return;
+        
+        // FILTRO RAMO
+        if (filtroRamo && !(d.ramo || "").toLowerCase().includes(filtroRamo)) return;
+        
+        // FILTRO COMPANHIA
+        if (filtroCompanhia && !(d.companhia || "").toLowerCase().includes(filtroCompanhia)) return;
 
         const valor = parseNumero(d.valor);
         const comissao = parseNumero(d.comissao);
@@ -827,6 +869,11 @@
       if (mes) document.getElementById("mes").value = mes;
       if (filtro) document.getElementById("filtroVendedor").value = filtro;
 
+      document.getElementById("filtroID").value = localStorage.getItem("filtroID") || "";
+      document.getElementById("filtroNome").value = localStorage.getItem("filtroNome") || "";
+      document.getElementById("filtroRamo").value = localStorage.getItem("filtroRamo") || "";
+      document.getElementById("filtroCompanhia").value = localStorage.getItem("filtroCompanhia") || "";
+      
       carregarResumo();
       carregarResumoVendedor();
       carregarResumoCompanhia();
