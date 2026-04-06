@@ -217,35 +217,6 @@
   </div>
 
     <div class="card">
-      <h3>Filtro por Vendedor</h3>
-
-      <select id="filtroVendedor">
-        <option value="">Todos</option>
-        <option value="P">Paulino</option>
-        <option value="E">Eduardo</option>
-        <option value="S">Sueli</option>
-        <option value="J">Juliana</option>
-        <option value="WI">Willian</option>
-        <option value="MI">Minoru</option>
-        <option value="JR">Junior</option>
-        <option value="R">Rosana</option>
-        <option value="T">Tatiana</option>
-      </select>
-    </div>
-
-      <div class="card">
-        <h3>Filtros Avançados</h3>
-      
-        <input id="filtroID" placeholder="Filtrar por ID">
-      
-        <input id="filtroNome" placeholder="Filtrar por Nome">
-      
-        <input id="filtroRamo" placeholder="Filtrar por Ramo">
-      
-        <input id="filtroCompanhia" placeholder="Filtrar por Companhia">
-      </div>
-
-    <div class="card">
       <h3>Total por Vendedor</h3>
 
       <table>
@@ -277,18 +248,66 @@
   <div id="mesView" class="hidden">
     <h2 id="tituloMes"></h2>
 
-    <div class="card">
-      <h3>Adicionar Registro</h3>
-      <input id="identificador" placeholder="Identificador">
-      <input id="nome" placeholder="Nome">
-      <input id="comissao" placeholder="% Comissão">
-      <input id="valor" placeholder="Valor Líquido">
-      <input id="letra" placeholder="Inicial Vendedor">
-      <input id="ramo" placeholder="Ramo">
-      <input id="companhia" placeholder="Companhia">
-      <button onclick="salvar()">Salvar</button>
+  <div class="card">
+    <h3>Adicionar Registro</h3>
+    <input id="identificador" placeholder="Identificador">
+    <input id="nome" placeholder="Nome">
+    <input id="comissao" placeholder="% Comissão">
+    <input id="valor" placeholder="Valor Líquido">
+    <input id="letra" placeholder="Inicial Vendedor">
+    <input id="ramo" placeholder="Ramo">
+    <input id="companhia" placeholder="Companhia">
+    <button onclick="salvar()">Salvar</button>
+  </div> <!-- ✅ FECHA AQUI -->
+  
+  <div class="card">
+    <h3>Filtros</h3>
+  
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      
+      <!-- VENDEDOR -->
+      <div>
+        <label>Vendedor</label><br>
+        <select id="filtroVendedor">
+          <option value="">Todos</option>
+          <option value="P">Paulino</option>
+          <option value="E">Eduardo</option>
+          <option value="S">Sueli</option>
+          <option value="J">Juliana</option>
+          <option value="WI">Willian</option>
+          <option value="MI">Minoru</option>
+          <option value="JR">Junior</option>
+          <option value="R">Rosana</option>
+          <option value="T">Tatiana</option>
+        </select>
+      </div>
+  
+      <!-- ID -->
+      <div>
+        <label>ID</label><br>
+        <input id="filtroID" placeholder="ID">
+      </div>
+  
+      <!-- NOME -->
+      <div>
+        <label>Nome</label><br>
+        <input id="filtroNome" placeholder="Nome">
+      </div>
+  
+      <!-- RAMO -->
+      <div>
+        <label>Ramo</label><br>
+        <input id="filtroRamo" placeholder="Ramo">
+      </div>
+  
+      <!-- COMPANHIA -->
+      <div>
+        <label>Companhia</label><br>
+        <input id="filtroCompanhia" placeholder="Companhia">
+      </div>
+  
     </div>
-
+  </div>
     <table>
       <thead>
         <tr>
