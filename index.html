@@ -953,6 +953,7 @@
     
       carregarAnaliseAno();
     }
+
     window.compararVendedores = async function() {
       const ano = document.getElementById("ano").value;
       const v1 = document.getElementById("vendedor1").value;
@@ -966,30 +967,33 @@
         [v2]: { total: 0, comissao: 0 }
       };
     
-      // 🔥 1. cria lista de promessas
       const promessas = [];
-      
+    
       for (let m = 1; m <= 12; m++) {
         const mes = String(m).padStart(2, '0');
         const ref = collection(db, "dados", ano, "meses", mes, "registros");
-      
-        promessas.push(getDocs(ref)); // 🔥 SEM await
+    
+        promessas.push(getDocs(ref));
       }
-      
-      // 🔥 2. executa tudo ao mesmo tempo
+    
       const snapshots = await Promise.all(promessas);
-      
-      // 🔥 3. processa os dados
+    
       snapshots.forEach(snapshot => {
         snapshot.forEach(doc => {
           const d = doc.data();
-          const letra = (d.letra || "").toUpperCase().trim();
-      
+    
+          let letra = (d.letra || "").toString().toUpperCase().trim();
+    
+          // 🔥 normalização extra
+          if (letra === "WILLIAN") letra = "WI";
+          if (letra === "JUNIOR") letra = "JR";
+          if (letra === "MINORU") letra = "MI";
+    
           if (letra !== v1 && letra !== v2) return;
-      
+    
           const valor = parseNumero(d.valor);
           const comissao = parseNumero(d.comissao);
-      
+    
           const valorComissao = calcularComissao(
             valor,
             comissao,
@@ -997,7 +1001,9 @@
             d.ano,
             d.mes
           );
-      
+    
+          if (!dados[letra]) return;
+    
           dados[letra].total += valor;
           dados[letra].comissao += valorComissao;
         });
@@ -1015,8 +1021,10 @@
         "JR": "Junior"
       };
     
+      let html = "";
+    
       [v1, v2].forEach(v => {
-        resultado.innerHTML += `
+        html += `
           <tr>
             <td>${nomes[v]}</td>
             <td>${formatarMoeda(dados[v].total)}</td>
@@ -1024,7 +1032,10 @@
           </tr>
         `;
       });
+    
+      resultado.innerHTML = html;
     }
+  
     window.voltarHome = function() {
       document.getElementById("analiseView").classList.add("hidden");
       document.getElementById("home").classList.remove("hidden");
