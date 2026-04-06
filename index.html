@@ -250,17 +250,59 @@
         <tbody id="resumoCompanhia"></tbody>
       </table>
     </div>
-
+  
   <div id="analiseView" class="hidden">
     <h2>Painel de Análise</h2>
   
     <div class="card">
-      <h3>Total por Vendedor no Ano</h3>
+      <h3>Comparação de Vendedores</h3>
+  
+      <select id="vendedor1">
+        <option value="P">Paulino</option>
+        <option value="E">Eduardo</option>
+        <option value="S">Sueli</option>
+        <option value="J">Juliana</option>
+        <option value="WI">Willian</option>
+        <option value="MI">Minoru</option>
+        <option value="T">Tatiana</option>
+        <option value="R">Rosana</option>
+        <option value="JR">Junior</option>
+      </select>
+  
+      <select id="vendedor2">
+        <option value="P">Paulino</option>
+        <option value="E">Eduardo</option>
+        <option value="S">Sueli</option>
+        <option value="J">Juliana</option>
+        <option value="WI">Willian</option>
+        <option value="MI">Minoru</option>
+        <option value="T">Tatiana</option>
+        <option value="R">Rosana</option>
+        <option value="JR">Junior</option>
+      </select>
+  
+      <button onclick="compararVendedores()">Comparar</button>
+  
       <table>
         <thead>
           <tr>
             <th>Vendedor</th>
             <th>Total Ano</th>
+            <th>Comissão Ano</th>
+          </tr>
+        </thead>
+        <tbody id="resultadoComparacao"></tbody>
+      </table>
+    </div>
+  
+    <div class="card">
+      <h3>Total Geral por Vendedor no Ano</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th>Total Ano</th>
+            <th>Comissão Ano</th>
           </tr>
         </thead>
         <tbody id="analiseVendedorAno"></tbody>
@@ -507,7 +549,6 @@
   
     let vendedores = {};
   
-    // percorre todos os meses
     for (let m = 1; m <= 12; m++) {
       const mes = String(m).padStart(2, '0');
       const ref = collection(db, "dados", ano, "meses", mes, "registros");
@@ -521,21 +562,33 @@
         const vendedor = nomesVendedores[letra] || letra;
   
         const valor = parseNumero(d.valor);
+        const comissao = parseNumero(d.comissao);
   
-        if (!vendedores[vendedor]) vendedores[vendedor] = 0;
+        const valorComissao = calcularComissao(
+          valor,
+          comissao,
+          letra,
+          d.ano,
+          d.mes
+        );
   
-        vendedores[vendedor] += valor;
+        if (!vendedores[vendedor]) {
+          vendedores[vendedor] = { total: 0, comissao: 0 };
+        }
+  
+        vendedores[vendedor].total += valor;
+        vendedores[vendedor].comissao += valorComissao;
       });
     }
   
-    // ordena
     Object.keys(vendedores)
-      .sort((a, b) => vendedores[b] - vendedores[a])
+      .sort((a, b) => vendedores[b].total - vendedores[a].total)
       .forEach(v => {
         tabela.innerHTML += `
           <tr>
             <td>${v}</td>
-            <td>${formatarMoeda(vendedores[v])}</td>
+            <td>${formatarMoeda(vendedores[v].total)}</td>
+            <td>${formatarMoeda(vendedores[v].comissao)}</td>
           </tr>
         `;
       });
@@ -898,7 +951,69 @@
     
       carregarAnaliseAno();
     }
+    window.compararVendedores = async function() {
+      const ano = document.getElementById("ano").value;
+      const v1 = document.getElementById("vendedor1").value;
+      const v2 = document.getElementById("vendedor2").value;
     
+      const resultado = document.getElementById("resultadoComparacao");
+      resultado.innerHTML = "";
+    
+      let dados = {
+        [v1]: { total: 0, comissao: 0 },
+        [v2]: { total: 0, comissao: 0 }
+      };
+    
+      for (let m = 1; m <= 12; m++) {
+        const mes = String(m).padStart(2, '0');
+        const ref = collection(db, "dados", ano, "meses", mes, "registros");
+    
+        const snapshot = await getDocs(ref);
+    
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const letra = (d.letra || "").toUpperCase().trim();
+    
+          if (letra !== v1 && letra !== v2) return;
+    
+          const valor = parseNumero(d.valor);
+          const comissao = parseNumero(d.comissao);
+    
+          const valorComissao = calcularComissao(
+            valor,
+            comissao,
+            letra,
+            d.ano,
+            d.mes
+          );
+    
+          dados[letra].total += valor;
+          dados[letra].comissao += valorComissao;
+        });
+      }
+    
+      const nomes = {
+        "P": "Paulino",
+        "E": "Eduardo",
+        "S": "Sueli",
+        "J": "Juliana",
+        "WI": "Willian",
+        "MI": "Minoru",
+        "T": "Tatiana",
+        "R": "Rosana",
+        "JR": "Junior"
+      };
+    
+      [v1, v2].forEach(v => {
+        resultado.innerHTML += `
+          <tr>
+            <td>${nomes[v]}</td>
+            <td>${formatarMoeda(dados[v].total)}</td>
+            <td>${formatarMoeda(dados[v].comissao)}</td>
+          </tr>
+        `;
+      });
+    }
     window.voltarHome = function() {
       document.getElementById("analiseView").classList.add("hidden");
       document.getElementById("home").classList.remove("hidden");
