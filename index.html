@@ -380,6 +380,7 @@
   let caminho = "";
   let ultimoIdentificador = "";
   let unsubscribeResumoVendedor = null;
+  let unsubscribeTabela = null;
 
   const anoSelect = document.getElementById("ano");
   const resumo = document.getElementById("resumo");
@@ -840,7 +841,8 @@
     const filtroNome = document.getElementById("filtroNome").value.toLowerCase().trim();
     const filtroRamo = document.getElementById("filtroRamo").value.toLowerCase().trim();
     const filtroCompanhia = document.getElementById("filtroCompanhia").value.toLowerCase().trim();
-    onSnapshot(caminho, (snapshot) => {
+    if (unsubscribeTabela) unsubscribeTabela();
+      unsubscribeTabela = onSnapshot(caminho, (snapshot) => {
       tabela.innerHTML = "";
 
       let docs = [];
