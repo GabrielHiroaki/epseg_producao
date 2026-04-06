@@ -389,7 +389,13 @@
       salvarEstado();
     });
   });
-
+  
+  function formatarMoeda(valor) {
+    return valor.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
   function salvarEstado() {
     localStorage.setItem("ano", document.getElementById("ano").value);
     localStorage.setItem("mes", document.getElementById("mes").value);
@@ -443,7 +449,7 @@
           resumoCompanhia.innerHTML += `
             <tr style="${i === 0 ? 'color:#22c55e; font-weight:bold;' : ''}">
               <td>${c}</td>
-              <td>R$ ${companhias[c].toFixed(2)}</td>
+              <td>${formatarMoeda(companhias[c])}</td>
             </tr>
           `;
         });
@@ -517,8 +523,8 @@
           resumoVendedor.innerHTML += `
             <tr>
               <td>${v}</td>
-              <td>R$ ${vendedores[v].total.toFixed(2)}</td>
-              <td>R$ ${vendedores[v].comissao.toFixed(2)}</td>
+              <td>${formatarMoeda(vendedores[v].total)}</td>
+              <td>${formatarMoeda(vendedores[v].comissao)}</td>
             </tr>
           `;
         });
@@ -620,9 +626,9 @@
 
         row.innerHTML = `
           <td>${mes}</td>
-          <td>R$ ${total.toFixed(2)}</td>
+          <td>${formatarMoeda(total)}</td>
           <td style="color:#22c55e; font-weight:bold;">
-            R$ ${totalComissao.toFixed(2)}
+            ${formatarMoeda(totalComissao)}
           </td>
         `;
       });
