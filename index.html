@@ -512,22 +512,31 @@
     };
   
     let vendedores = {};
-  
+    
+    // 🔥 1. cria promessas
+    const promessas = [];
+    
     for (let m = 1; m <= 12; m++) {
       const mes = String(m).padStart(2, '0');
       const ref = collection(db, "dados", ano, "meses", mes, "registros");
-  
-      const snapshot = await getDocs(ref);
-  
+    
+      promessas.push(getDocs(ref)); // ❌ sem await aqui
+    }
+    
+    // 🔥 2. executa tudo junto
+    const snapshots = await Promise.all(promessas);
+    
+    // 🔥 3. processa os dados
+    snapshots.forEach(snapshot => {
       snapshot.forEach(doc => {
         const d = doc.data();
-  
+    
         const letra = (d.letra || "").toUpperCase().trim();
         const vendedor = nomesVendedores[letra] || letra;
-  
+    
         const valor = parseNumero(d.valor);
         const comissao = parseNumero(d.comissao);
-  
+    
         const valorComissao = calcularComissao(
           valor,
           comissao,
@@ -535,15 +544,15 @@
           d.ano,
           d.mes
         );
-  
+    
         if (!vendedores[vendedor]) {
           vendedores[vendedor] = { total: 0, comissao: 0 };
         }
-  
+    
         vendedores[vendedor].total += valor;
         vendedores[vendedor].comissao += valorComissao;
       });
-    }
+    });
   
     Object.keys(vendedores)
       .sort((a, b) => vendedores[b].total - vendedores[a].total)
@@ -771,7 +780,6 @@
     resumo.innerHTML = "";
   
     const promessas = [];
-  
     for (let m = 1; m <= 12; m++) {
       const mes = String(m).padStart(2, '0');
       const ref = collection(db, "dados", ano, "meses", mes, "registros");
@@ -958,21 +966,30 @@
         [v2]: { total: 0, comissao: 0 }
       };
     
+      // 🔥 1. cria lista de promessas
+      const promessas = [];
+      
       for (let m = 1; m <= 12; m++) {
         const mes = String(m).padStart(2, '0');
         const ref = collection(db, "dados", ano, "meses", mes, "registros");
-    
-        const snapshot = await getDocs(ref);
-    
+      
+        promessas.push(getDocs(ref)); // 🔥 SEM await
+      }
+      
+      // 🔥 2. executa tudo ao mesmo tempo
+      const snapshots = await Promise.all(promessas);
+      
+      // 🔥 3. processa os dados
+      snapshots.forEach(snapshot => {
         snapshot.forEach(doc => {
           const d = doc.data();
           const letra = (d.letra || "").toUpperCase().trim();
-    
+      
           if (letra !== v1 && letra !== v2) return;
-    
+      
           const valor = parseNumero(d.valor);
           const comissao = parseNumero(d.comissao);
-    
+      
           const valorComissao = calcularComissao(
             valor,
             comissao,
@@ -980,11 +997,11 @@
             d.ano,
             d.mes
           );
-    
+      
           dados[letra].total += valor;
           dados[letra].comissao += valorComissao;
         });
-      }
+      });
     
       const nomes = {
         "P": "Paulino",
