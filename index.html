@@ -161,16 +161,14 @@
   <!-- TELA INICIAL -->
   <div id="home">
 
+    <!-- Período -->
     <div class="card">
       <h3>Período</h3>
-
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        
         <div>
           <label>Ano</label><br>
           <select id="ano"></select>
         </div>
-
         <div>
           <label>Mês</label><br>
           <select id="mes">
@@ -188,24 +186,26 @@
             <option value="12">Dezembro</option>
           </select>
         </div>
-
         <div style="margin-top:18px;">
           <button onclick="entrarMes()">Abrir</button>
         </div>
-
       </div>
     </div>
 
+    <!-- Painel de Análises -->
     <div class="card">
       <h3>Análises</h3>
       <button onclick="abrirAnalise()">Abrir Painel de Análise</button>
     </div>
-    
+
+    <!-- Importar Excel -->
     <div class="card">
       <h3>Importar Excel</h3>
       <input type="file" id="arquivoExcel" accept=".xlsx, .xls">
       <button onclick="importarExcel()">Importar Excel</button>
     </div>
+
+    <!-- Resumo por Mês -->
     <div class="card">
       <h3>Resumo por Mês</h3>
       <table>
@@ -220,11 +220,9 @@
       </table>
     </div>
 
-  </div>
-
+    <!-- Total por Vendedor (MÊS SELECIONADO) -->
     <div class="card">
       <h3>Total por Vendedor</h3>
-
       <table>
         <thead>
           <tr>
@@ -237,9 +235,9 @@
       </table>
     </div>
 
+    <!-- Total por Companhia (MÊS SELECIONADO) -->
     <div class="card">
       <h3>Total por Companhia</h3>
-
       <table>
         <thead>
           <tr>
@@ -250,13 +248,16 @@
         <tbody id="resumoCompanhiaInicial"></tbody>
       </table>
     </div>
-  
+
+  </div> <!-- FIM HOME -->
+
+  <!-- PAINEL DE ANÁLISE -->
   <div id="analiseView" class="hidden">
     <h2>Painel de Análise</h2>
-  
+
+    <!-- Comparação de Vendedores -->
     <div class="card">
       <h3>Comparação de Vendedores</h3>
-  
       <select id="vendedor1">
         <option value="P">Paulino</option>
         <option value="E">Eduardo</option>
@@ -268,7 +269,6 @@
         <option value="R">Rosana</option>
         <option value="JR">Junior</option>
       </select>
-  
       <select id="vendedor2">
         <option value="P">Paulino</option>
         <option value="E">Eduardo</option>
@@ -280,9 +280,7 @@
         <option value="R">Rosana</option>
         <option value="JR">Junior</option>
       </select>
-  
       <button onclick="compararVendedores()">Comparar</button>
-  
       <table>
         <thead>
           <tr>
@@ -294,7 +292,8 @@
         <tbody id="resultadoComparacao"></tbody>
       </table>
     </div>
-  
+
+    <!-- Total Geral por Vendedor no Ano -->
     <div class="card">
       <h3>Total Geral por Vendedor no Ano</h3>
       <table>
@@ -308,91 +307,8 @@
         <tbody id="analiseVendedorAno"></tbody>
       </table>
     </div>
-  
+
     <button onclick="voltarHome()">Voltar</button>
-  </div>
-    
-  <div id="mesView" class="hidden">
-    <h2 id="tituloMes"></h2>
-
-  <div class="card">
-    <h3>Adicionar Registro</h3>
-    <input id="identificador" placeholder="Identificador">
-    <input id="nome" placeholder="Nome">
-    <input id="comissao" placeholder="% Comissão">
-    <input id="valor" placeholder="Valor Líquido">
-    <input id="letra" placeholder="Inicial Vendedor">
-    <input id="ramo" placeholder="Ramo">
-    <input id="companhia" placeholder="Companhia">
-    <button onclick="salvar()">Salvar</button>
-  </div> <!-- ✅ FECHA AQUI -->
-  
-  <div class="card">
-    <h3>Filtros</h3>
-  
-    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-      
-      <!-- VENDEDOR -->
-      <div>
-        <label>Vendedor</label><br>
-        <select id="filtroVendedor">
-          <option value="">Todos</option>
-          <option value="P">Paulino</option>
-          <option value="E">Eduardo</option>
-          <option value="S">Sueli</option>
-          <option value="J">Juliana</option>
-          <option value="WI">Willian</option>
-          <option value="MI">Minoru</option>
-          <option value="JR">Junior</option>
-          <option value="R">Rosana</option>
-          <option value="T">Tatiana</option>
-        </select>
-      </div>
-  
-      <!-- ID -->
-      <div>
-        <label>ID</label><br>
-        <input id="filtroID" placeholder="ID">
-      </div>
-  
-      <!-- NOME -->
-      <div>
-        <label>Nome</label><br>
-        <input id="filtroNome" placeholder="Nome">
-      </div>
-  
-      <!-- RAMO -->
-      <div>
-        <label>Ramo</label><br>
-        <input id="filtroRamo" placeholder="Ramo">
-      </div>
-  
-      <!-- COMPANHIA -->
-      <div>
-        <label>Companhia</label><br>
-        <input id="filtroCompanhia" placeholder="Companhia">
-      </div>
-  
-    </div>
-  </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Segurado</th>
-          <th>%</th>
-          <th>Valor</th>
-          <th>Produtor</th>
-          <th>Ramo</th>
-          <th>Companhia</th>
-          <th>Comissão R$</th>
-          <th>X</th>
-        </tr>
-      </thead>
-      <tbody id="tabela"></tbody>
-    </table>
-
-    <button onclick="voltar()">Voltar</button>
   </div>
 
 </div>
