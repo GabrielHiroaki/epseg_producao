@@ -380,6 +380,7 @@
   let caminho = "";
   let ultimoIdentificador = "";
   let unsubscribeResumoVendedor = null;
+  let unsubscribeResumoCompanhia = null;
   let unsubscribeTabela = null;
   let dadosCache = [];
 
@@ -617,32 +618,44 @@
   
     const ref = collection(db, "dados", ano, "meses", mes, "registros");
   
-    onSnapshot(ref, (snapshot) => {
+    // 🔥 CANCELA LISTENER ANTERIOR (ESSENCIAL)
+    if (unsubscribeResumoCompanhia) unsubscribeResumoCompanhia();
+  
+    // 🔥 CRIA NOVO LISTENER
+    unsubscribeResumoCompanhia = onSnapshot(ref, (snapshot) => {
       let companhias = {};
+  
       snapshot.forEach(doc => {
         const d = doc.data();
+  
         const letra = (d.letra || "").toUpperCase().trim();
         if (filtro && letra !== filtro) return;
   
         const comp = (d.companhia || "Sem companhia").toUpperCase().trim();
-        if (!companhias[comp]) companhias[comp] = 0;
+  
+        if (!companhias[comp]) {
+          companhias[comp] = 0;
+        }
   
         companhias[comp] += parseNumero(d.valor);
       });
   
-      // **Aqui usamos o ID do menu inicial**
-      resumoCompanhiaInicial.innerHTML = "";
+      // 🔥 MONTA HTML NA MEMÓRIA (PERFORMANCE)
+      let html = "";
   
       Object.keys(companhias)
         .sort((a, b) => companhias[b] - companhias[a])
         .forEach((c, i) => {
-          resumoCompanhiaInicial.innerHTML += `
+          html += `
             <tr style="${i === 0 ? 'color:#22c55e; font-weight:bold;' : ''}">
               <td>${c}</td>
               <td>${formatarMoeda(companhias[c])}</td>
             </tr>
           `;
         });
+  
+      // 🔥 RENDERIZA UMA VEZ SÓ
+      resumoCompanhiaInicial.innerHTML = html;
     });
   }
 
@@ -706,39 +719,52 @@
     const filtroRamo = document.getElementById("filtroRamo").value.toLowerCase().trim();
     const filtroCompanhia = document.getElementById("filtroCompanhia").value.toLowerCase().trim();
   
-    tabela.innerHTML = "";
-  
     let docs = [...dadosCache];
   
+    // ordena
     docs.sort((a, b) => (a.criadoEm || 0) - (b.criadoEm || 0));
+  
+    // monta HTML na memória (MUITO mais rápido)
+    let html = "";
   
     docs.forEach(d => {
       const letra = (d.letra || "").toUpperCase().trim();
   
+      // filtros
       if (filtroVendedor && letra !== filtroVendedor) return;
-      if (filtroID && String(d.identificador) !== filtroID) return;
+      if (filtroID && !String(d.identificador || "").includes(filtroID)) return;
       if (filtroNome && !(d.nome || "").toLowerCase().includes(filtroNome)) return;
       if (filtroRamo && !(d.ramo || "").toLowerCase().includes(filtroRamo)) return;
       if (filtroCompanhia && !(d.companhia || "").toLowerCase().includes(filtroCompanhia)) return;
   
       const valor = parseNumero(d.valor);
       const comissao = parseNumero(d.comissao);
-      const valorComissao = calcularComissao(valor, comissao, letra, d.ano, d.mes);
   
-      tabela.innerHTML += `
+      const valorComissao = calcularComissao(
+        valor,
+        comissao,
+        letra,
+        d.ano,
+        d.mes
+      );
+  
+      html += `
         <tr data-id="${d.id}">
-          <td contenteditable="true" data-field="identificador">${d.identificador}</td>
-          <td contenteditable="true" data-field="nome">${d.nome}</td>
-          <td contenteditable="true" data-field="comissao">${d.comissao}</td>
-          <td contenteditable="true" data-field="valor">${d.valor}</td>
-          <td contenteditable="true" data-field="letra">${d.letra}</td>
-          <td contenteditable="true" data-field="ramo">${d.ramo || ""}</td>
-          <td contenteditable="true" data-field="companhia">${d.companhia}</td>
+          <td contenteditable="true" data-field="identificador">${d.identificador ?? ""}</td>
+          <td contenteditable="true" data-field="nome">${d.nome ?? ""}</td>
+          <td contenteditable="true" data-field="comissao">${d.comissao ?? ""}</td>
+          <td contenteditable="true" data-field="valor">${d.valor ?? ""}</td>
+          <td contenteditable="true" data-field="letra">${d.letra ?? ""}</td>
+          <td contenteditable="true" data-field="ramo">${d.ramo ?? ""}</td>
+          <td contenteditable="true" data-field="companhia">${d.companhia ?? ""}</td>
           <td>R$ ${valorComissao.toFixed(2)}</td>
           <td class="delete-btn" data-id="${d.id}">x</td>
         </tr>
       `;
     });
+  
+    // renderiza uma única vez
+    tabela.innerHTML = html;
   }
   async function carregarResumo() {
     const ano = anoSelect.value;
@@ -877,99 +903,40 @@
     // já deixa o próximo ID pronto
     identificador.value = ultimoIdentificador;
   }
-
   function carregar() {
     const tabela = document.getElementById("tabela");
+  
     const filtroVendedor = document.getElementById("filtroVendedor").value;
     const filtroID = document.getElementById("filtroID").value.trim();
     const filtroNome = document.getElementById("filtroNome").value.toLowerCase().trim();
     const filtroRamo = document.getElementById("filtroRamo").value.toLowerCase().trim();
     const filtroCompanhia = document.getElementById("filtroCompanhia").value.toLowerCase().trim();
+  
+    // cancela listener anterior
     if (unsubscribeTabela) unsubscribeTabela();
-      unsubscribeTabela = onSnapshot(caminho, (snapshot) => {
-      tabela.innerHTML = "";
-
+  
+    unsubscribeTabela = onSnapshot(caminho, (snapshot) => {
+      // limpa cache
       dadosCache = [];
-      snapshot.forEach(d => dadosCache.push({ id: d.id, ...d.data() }));
-      renderTabela();
-
-      docs.sort((a, b) => (a.criadoEm || 0) - (b.criadoEm || 0));
-
-      // AQUI ESTÁ A CORREÇÃO REAL
-      if (docs.length > 0) {
-        const ultimo = Number(docs[docs.length - 1].identificador) || 0;
+  
+      // joga tudo no cache
+      snapshot.forEach(d => {
+        dadosCache.push({ id: d.id, ...d.data() });
+      });
+  
+      // 🔥 ORDENA ANTES DE TUDO (IMPORTANTE PRO ID)
+      dadosCache.sort((a, b) => (a.criadoEm || 0) - (b.criadoEm || 0));
+  
+      // 🔥 ATUALIZA ID AUTOMÁTICO
+      if (dadosCache.length > 0) {
+        const ultimo = Number(dadosCache[dadosCache.length - 1].identificador) || 0;
         ultimoIdentificador = ultimo + 1;
         document.getElementById("identificador").value = ultimoIdentificador;
       } else {
-        ultimoIdentificador = "";
-        document.getElementById("identificador").value = "";
+        ultimoIdentificador = 1;
+        document.getElementById("identificador").value = 1;
       }
-
-      docs.forEach(d => {
-        const letra = (d.letra || "").toUpperCase().trim();
-
-        // FILTRO VENDEDOR
-        if (filtroVendedor && letra !== filtroVendedor) return;
-        
-        // FILTRO ID
-        if (filtroID && String(d.identificador) !== filtroID) return;
-        
-        // FILTRO NOME
-        if (filtroNome && !(d.nome || "").toLowerCase().includes(filtroNome)) return;
-        
-        // FILTRO RAMO
-        if (filtroRamo && !(d.ramo || "").toLowerCase().includes(filtroRamo)) return;
-        
-        // FILTRO COMPANHIA
-        if (filtroCompanhia && !(d.companhia || "").toLowerCase().includes(filtroCompanhia)) return;
-
-        const valor = parseNumero(d.valor);
-        const comissao = parseNumero(d.comissao);
-        const valorComissao = calcularComissao(
-          valor,
-          comissao,
-          letra,
-          d.ano,
-          d.mes
-        );
-
-        tabela.innerHTML += `
-          <tr data-id="${d.id}">
-            <td contenteditable="true" data-field="identificador">${d.identificador}</td>
-            <td contenteditable="true" data-field="nome">${d.nome}</td>
-            <td contenteditable="true" data-field="comissao">${d.comissao}</td>
-            <td contenteditable="true" data-field="valor">${d.valor}</td>
-            <td contenteditable="true" data-field="letra">${d.letra}</td>
-            <td contenteditable="true" data-field="ramo">${d.ramo || ""}</td>
-            <td contenteditable="true" data-field="companhia">${d.companhia}</td>
-            <td>R$ ${valorComissao.toFixed(2)}</td>
-            <td class="delete-btn" data-id="${d.id}">x</td>
-          </tr>
-        `;
-      });
-
-      // editar
-      document.querySelectorAll("td[contenteditable='true']").forEach(td => {
-        td.addEventListener("blur", async () => {
-          const tr = td.parentElement;
-          const id = tr.getAttribute("data-id");
-          const campo = td.getAttribute("data-field");
-          const valor = td.innerText;
-
-          await updateDoc(doc(caminho, id), {
-            [campo]: ["identificador","comissao","valor"].includes(campo)
-              ? parseNumero(valor)
-              : valor
-          });
-        });
-      });
-
-      // deletar
-      document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          if (confirm("Excluir?")) await deleteDoc(doc(caminho, btn.dataset.id));
-        });
-      });
+      renderTabela();
     });
   }
     window.abrirAnalise = function() {
@@ -1143,6 +1110,36 @@
         entrarMes();
       }
     });
+
+    document.getElementById("tabela").addEventListener("click", async (e) => {
+      if (!caminho) return; // 🔥 proteção
+    
+      if (e.target.classList.contains("delete-btn")) {
+        const id = e.target.dataset.id;
+    
+        if (confirm("Excluir?")) {
+          await deleteDoc(doc(caminho, id));
+        }
+      }
+    });
+    document.getElementById("tabela").addEventListener("blur", async (e) => {
+      if (!caminho) return; // 🔥 proteção
+    
+      if (e.target.matches("td[contenteditable='true']")) {
+        const td = e.target;
+        const tr = td.parentElement;
+        const id = tr.dataset.id;
+        const campo = td.dataset.field;
+        const valor = td.innerText;
+    
+        await updateDoc(doc(caminho, id), {
+          [campo]: ["identificador","comissao","valor"].includes(campo)
+            ? parseNumero(valor)
+            : valor
+        });
+      }
+    }, true);
+  
 </script>
 
 </body>
