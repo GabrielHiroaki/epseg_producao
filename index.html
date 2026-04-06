@@ -207,6 +207,7 @@
           <tr>
             <th>Mês</th>
             <th>Total Valor</th>
+            <th>Total Comissão</th>
           </tr>
         </thead>
         <tbody id="resumo"></tbody>
@@ -542,9 +543,27 @@
 
       onSnapshot(ref, (snapshot) => {
         let total = 0;
+        let totalComissao = 0; // 🔥 NOVO
+
         snapshot.forEach(doc => {
           const d = doc.data();
-          total += parseNumero(d.valor);
+
+          const valor = parseNumero(d.valor);
+          const comissao = parseNumero(d.comissao);
+          const letra = (d.letra || "").toUpperCase().trim();
+
+          total += valor;
+
+          // 🔥 calcula comissão igual ao resto do sistema
+          const valorComissao = calcularComissao(
+            valor,
+            comissao,
+            letra,
+            d.ano,
+            d.mes
+          );
+
+          totalComissao += valorComissao;
         });
 
         let row = document.getElementById("resumo-" + mes);
@@ -555,7 +574,13 @@
           resumo.appendChild(row);
         }
 
-        row.innerHTML = `<td>${mes}</td><td>R$ ${total.toFixed(2)}</td>`;
+        row.innerHTML = `
+          <td>${mes}</td>
+          <td>R$ ${total.toFixed(2)}</td>
+          <td style="color:#22c55e; font-weight:bold;">
+            R$ ${totalComissao.toFixed(2)}
+          </td>
+        `;
       });
     }
   }
