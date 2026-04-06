@@ -383,19 +383,19 @@
   anoSelect.addEventListener("change", () => {
     carregarResumo();
     carregarResumoVendedor();
-    carregarResumoCompanhia(); 
+    carregarResumoCompanhiaInicial();
     salvarEstado();
   });
 
   document.getElementById("mes").addEventListener("change", () => {
     carregarResumoVendedor();
-    carregarResumoCompanhia(); 
+    carregarResumoCompanhiaInicial();
     salvarEstado();
   });
 
   document.getElementById("filtroVendedor").addEventListener("change", () => {
     carregarResumoVendedor();
-    carregarResumoCompanhia();
+    carregarResumoCompanhiaInicial();
     carregar();
     salvarEstado();
   });
@@ -1075,9 +1075,10 @@
       document.getElementById("filtroRamo").value = localStorage.getItem("filtroRamo") || "";
       document.getElementById("filtroCompanhia").value = localStorage.getItem("filtroCompanhia") || "";
       
-      carregarResumo();
       carregarResumoVendedor();
-      carregarResumoCompanhia();
+      carregarResumoCompanhiaInicial();
+      carregarResumo(); // Resumo por mês
+      
 
       // VOLTA DIRETO PRO MÊS
       if (ano && mes && dentroMes) {
