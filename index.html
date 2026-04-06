@@ -195,6 +195,12 @@
 
       </div>
     </div>
+
+    <div class="card">
+      <h3>Análises</h3>
+      <button onclick="abrirAnalise()">Abrir Painel de Análise</button>
+    </div>
+    
     <div class="card">
       <h3>Importar Excel</h3>
       <input type="file" id="arquivoExcel" accept=".xlsx, .xls">
@@ -245,6 +251,25 @@
       </table>
     </div>
 
+  <div id="analiseView" class="hidden">
+    <h2>Painel de Análise</h2>
+  
+    <div class="card">
+      <h3>Total por Vendedor no Ano</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th>Total Ano</th>
+          </tr>
+        </thead>
+        <tbody id="analiseVendedorAno"></tbody>
+      </table>
+    </div>
+  
+    <button onclick="voltarHome()">Voltar</button>
+  </div>
+    
   <div id="mesView" class="hidden">
     <h2 id="tituloMes"></h2>
 
@@ -332,7 +357,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAnoi88rFaDzEbaWabfCgWlYhe5SJ6q6PQ",
@@ -343,7 +368,7 @@
     appId: "1:518851666796:web:d9867f74b3c93ad83a8949",
     measurementId: "G-GS9KT2VZZH"
   };
-
+  
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -457,7 +482,64 @@
   }
 
   const resumoVendedor = document.getElementById("resumoVendedor");
-
+  async function carregarAnaliseAno() {
+    const ano = document.getElementById("ano").value;
+  
+    if (!ano) {
+      alert("Selecione o ano primeiro!");
+      return;
+    }
+  
+    const tabela = document.getElementById("analiseVendedorAno");
+    tabela.innerHTML = "";
+  
+    const nomesVendedores = {
+      "P": "Paulino",
+      "E": "Eduardo",
+      "S": "Sueli",
+      "J": "Juliana",
+      "WI": "Willian",
+      "MI": "Minoru",
+      "T": "Tatiana",
+      "R": "Rosana",
+      "JR": "Junior"
+    };
+  
+    let vendedores = {};
+  
+    // percorre todos os meses
+    for (let m = 1; m <= 12; m++) {
+      const mes = String(m).padStart(2, '0');
+      const ref = collection(db, "dados", ano, "meses", mes, "registros");
+  
+      const snapshot = await getDocs(ref);
+  
+      snapshot.forEach(doc => {
+        const d = doc.data();
+  
+        const letra = (d.letra || "").toUpperCase().trim();
+        const vendedor = nomesVendedores[letra] || letra;
+  
+        const valor = parseNumero(d.valor);
+  
+        if (!vendedores[vendedor]) vendedores[vendedor] = 0;
+  
+        vendedores[vendedor] += valor;
+      });
+    }
+  
+    // ordena
+    Object.keys(vendedores)
+      .sort((a, b) => vendedores[b] - vendedores[a])
+      .forEach(v => {
+        tabela.innerHTML += `
+          <tr>
+            <td>${v}</td>
+            <td>${formatarMoeda(vendedores[v])}</td>
+          </tr>
+        `;
+      });
+  }
   function carregarResumoVendedor() {
     const ano = document.getElementById("ano").value;
     const mes = document.getElementById("mes").value;
@@ -810,7 +892,17 @@
       });
     });
   }
-
+    window.abrirAnalise = function() {
+      document.getElementById("home").classList.add("hidden");
+      document.getElementById("analiseView").classList.remove("hidden");
+    
+      carregarAnaliseAno();
+    }
+    
+    window.voltarHome = function() {
+      document.getElementById("analiseView").classList.add("hidden");
+      document.getElementById("home").classList.remove("hidden");
+    }
     window.importarExcel = async function () {
       const fileInput = document.getElementById("arquivoExcel");
       const file = fileInput.files[0];
