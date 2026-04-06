@@ -158,7 +158,7 @@
 
 <div class="container">
 
-  <!-- 🔥 TELA INICIAL -->
+  <!-- TELA INICIAL -->
   <div id="home">
 
     <div class="card">
@@ -379,7 +379,7 @@
         const d = doc.data();
         const letra = (d.letra || "").toUpperCase().trim();
 
-        // 🔥 FILTRO POR VENDEDOR
+        // FILTRO POR VENDEDOR
         if (filtro && letra !== filtro) return;
 
         const comp = (d.companhia || "Sem companhia").toUpperCase().trim();
@@ -543,7 +543,7 @@
 
       onSnapshot(ref, (snapshot) => {
         let total = 0;
-        let totalComissao = 0; // 🔥 NOVO
+        let totalComissao = 0; 
 
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -554,7 +554,7 @@
 
           total += valor;
 
-          // 🔥 calcula comissão igual ao resto do sistema
+          // calcula comissão igual ao resto do sistema
           const valorComissao = calcularComissao(
             valor,
             comissao,
