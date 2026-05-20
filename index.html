@@ -1120,9 +1120,18 @@
 			     salvarEstado();
 			   }
 			
-			document.addEventListener("keydown", (e) => {
-			  if (e.key === "Enter" && !document.getElementById("mesView").classList.contains("hidden")) {
-			    salvar();
+			document.addEventListener("keydown", async (e) => {
+			
+			  if (e.repeat) return;
+			
+			  if (
+			    e.key === "Enter" &&
+			    !document.getElementById("mesView").classList.contains("hidden")
+			  ) {
+			
+			    e.preventDefault();
+			
+			    await salvar();
 			  }
 			});
 			
@@ -1140,38 +1149,57 @@
 			  return true;
 			}
 			
+			let salvando = false;
+			
 			window.salvar = async function() {
-			  if (!validar()) return;
 			
-			  const idAtual = Number(identificador.value);
-			  const ano = Number(document.getElementById("ano").value);
-			  const mes = Number(document.getElementById("mes").value);
-			  await addDoc(caminho, {
-			    identificador: idAtual,
-			    nome: nome.value,
-			    comissao: parseNumero(comissao.value),
-			    valor: parseNumero(valor.value),
-			    letra: letra.value,
-			    companhia: companhia.value,
-			    ramo: ramo.value,
-			    ano: ano,  
-			    mes: mes,
-			    criadoEm: Date.now()
-			  });
+			  if (salvando) return;
 			
-			  // incrementa pro próximo automaticamente
-			  ultimoIdentificador = idAtual + 1;
+			  salvando = true;
 			
-			  // limpa campos (menos o ID)
-			  nome.value = "";
-			  comissao.value = "";
-			  valor.value = "";
-			  letra.value = "";
-			  companhia.value = "";
-			  ramo.value = "";
+			  try {
 			
-			  // já deixa o próximo ID pronto
-			  identificador.value = ultimoIdentificador;
+			    if (!validar()) {
+			      salvando = false;
+			      return;
+			    }
+			
+			    const idAtual = Number(identificador.value);
+			
+			    const ano = Number(document.getElementById("ano").value);
+			    const mes = Number(document.getElementById("mes").value);
+			
+			    await addDoc(caminho, {
+			      identificador: idAtual,
+			      nome: nome.value,
+			      comissao: parseNumero(comissao.value),
+			      valor: parseNumero(valor.value),
+			      letra: letra.value,
+			      companhia: companhia.value,
+			      ramo: ramo.value,
+			      ano: ano,
+			      mes: mes,
+			      criadoEm: Date.now()
+			    });
+			
+			    ultimoIdentificador = idAtual + 1;
+			
+			    nome.value = "";
+			    comissao.value = "";
+			    valor.value = "";
+			    letra.value = "";
+			    companhia.value = "";
+			    ramo.value = "";
+			
+			    identificador.value = ultimoIdentificador;
+			
+			  } finally {
+			
+			    setTimeout(() => {
+			      salvando = false;
+			    }, 500);
+			
+			  }
 			}
 			   async function carregarUmaVez() {
 			     const snapshot = await getDocs(caminho);
