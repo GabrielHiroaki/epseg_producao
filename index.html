@@ -264,28 +264,31 @@
 					<input id="valor" placeholder="Valor Líquido">
 					<input id="letra" placeholder="Inicial Vendedor">
 					<input id="ramo" placeholder="Ramo">
-					<input
-					    id="companhia"
-					    list="listaCompanhias"
-					    placeholder="Companhia"
-					    autocomplete="off"
-					>
+					<div style="position:relative; display:inline-block;">
+					    <input
+					        id="companhia"
+					        placeholder="Companhia"
+					        autocomplete="off"
+					    >
 					
-					<datalist id="listaCompanhias">
-					    <option value="PORTO">
-					    <option value="TOKIO MARINE">
-					    <option value="HDI">
-					    <option value="AZUL">
-					    <option value="MAPFRE">
-					    <option value="BRADESCO">
-					    <option value="ALLIANZ">
-					    <option value="LIBERTY">
-					    <option value="SOMPO">
-					    <option value="SUHAI">
-					    <option value="YELUM">
-						<option value="ALIRO">
-						<option value="ZURICH">
-					</datalist>
+					    <div id="sugestaoCompanhia"
+					        style="
+					            position:absolute;
+					            top:100%;
+					            left:0;
+					            width:100%;
+					            background:#1e293b;
+					            border:1px solid #334155;
+					            border-radius:8px;
+					            padding:8px 10px;
+					            color:#38bdf8;
+					            display:none;
+					            z-index:999;
+					            pointer-events:none;
+					            font-weight:bold;
+					        ">
+					    </div>
+					</div>
 					<button onclick="salvar()">Salvar</button>
 				</div>
 				<!-- Tabela -->
@@ -1509,7 +1512,85 @@
 			
 			       reader.readAsArrayBuffer(file);
 			     };        
-			
+				const companhias = [
+				    "PORTO",
+				    "TOKIO MARINE",
+				    "HDI",
+				    "AZUL",
+				    "MAPFRE",
+				    "BRADESCO",
+				    "ALLIANZ",
+				    "LIBERTY",
+				    "SOMPO",
+				    "SUHAI",
+				    "YELUM",
+				    "ALIRO",
+				    "ZURICH"
+				];
+				
+				const inputCompanhia = document.getElementById("companhia");
+				const sugestao = document.getElementById("sugestaoCompanhia");
+				
+				let sugestaoAtual = "";
+				
+				inputCompanhia.addEventListener("input", () => {
+				
+				    const texto = inputCompanhia.value
+				        .toUpperCase()
+				        .trim();
+				
+				    sugestaoAtual = "";
+				
+				    if (!texto) {
+				        sugestao.style.display = "none";
+				        return;
+				    }
+				
+				    const match = companhias.find(c =>
+				        c.startsWith(texto)
+				    );
+				
+				    if (!match || match === texto) {
+				        sugestao.style.display = "none";
+				        return;
+				    }
+				
+				    sugestaoAtual = match;
+				
+				    sugestao.innerHTML =
+				        `<span style="opacity:.4">${texto}</span>${match.slice(texto.length)}`;
+				
+				    sugestao.style.display = "block";
+				});
+				
+				inputCompanhia.addEventListener("keydown", (e) => {
+				
+				    // TAB completa
+				    if (e.key === "Tab" && sugestaoAtual) {
+				        e.preventDefault();
+				
+				        inputCompanhia.value = sugestaoAtual;
+				        sugestao.style.display = "none";
+				    }
+				
+				    // ENTER também completa
+				    if (e.key === "Enter" && sugestaoAtual) {
+				        inputCompanhia.value = sugestaoAtual;
+				        sugestao.style.display = "none";
+				    }
+				
+				    // seta direita completa
+				    if (e.key === "ArrowRight" && sugestaoAtual) {
+				        inputCompanhia.value = sugestaoAtual;
+				        sugestao.style.display = "none";
+				    }
+				});
+				
+				inputCompanhia.addEventListener("blur", () => {
+				    setTimeout(() => {
+				        sugestao.style.display = "none";
+				    }, 100);
+				});		
 			     window.addEventListener("load", () => {
 			       const ano = localStorage.getItem("ano");
 			       const mes = localStorage.getItem("mes");
