@@ -492,8 +492,7 @@
 			       snapshot.forEach(doc => {
 			         const d = doc.data();
 			
-			         const letra = (d.letra || "").toUpperCase().trim();
-			         const nome = nomes[letra] || letra;
+					const nome = normalizarVendedor(d.letra);
 			
 			         if (filtroDash && !nome.toUpperCase().includes(filtroDash)) return;
 			
@@ -526,8 +525,7 @@
 			     snapshot.forEach(doc => {
 			       const d = doc.data();
 			
-			       const letra = (d.letra || "").toUpperCase().trim();
-			       const nome = nomes[letra] || letra;
+					const nome = normalizarVendedor(d.letra);
 			
 			       if (filtroDash && !nome.toUpperCase().includes(filtroDash)) return;
 			
@@ -536,16 +534,49 @@
 			
 			     return total;
 			   }
-			
+				function normalizarVendedor(valor) {
+				  if (!valor) return "SEM VENDEDOR";
+				
+				  let v = valor.toString().toUpperCase().trim();
+				
+				  // remove espaços duplos
+				  v = v.replace(/\s+/g, " ");
+				
+				  const mapa = {
+				    "P": "PAULINO",
+				    "PAULINO": "PAULINO",
+				
+				    "E": "EDUARDO",
+				    "EDUARDO": "EDUARDO",
+				
+				    "S": "SUELI",
+				    "SUELI": "SUELI",
+				
+				    "J": "JULIANA",
+				    "JULIANA": "JULIANA",
+				
+				    "WI": "WILLIAN",
+				    "WILLIAN": "WILLIAN",
+				
+				    "MI": "MINORU",
+				    "MINORU": "MINORU",
+				
+				    "JR": "JUNIOR",
+				    "JUNIOR": "JUNIOR",
+				
+				    "T": "TATIANA",
+				    "TATIANA": "TATIANA",
+				
+				    "R": "ROSANA",
+				    "ROSANA": "ROSANA"
+				  };
+				
+				  return mapa[v] || v;
+				}
 			   async function carregarAnaliseAno() {
 			     const filtroDash = document.getElementById("filtroDashboard")?.value?.toUpperCase().trim() || "";
 			     const ano = document.getElementById("ano").value;
-			
-			     const nomes = {
-			       "P": "Paulino","E": "Eduardo","S": "Sueli",
-			       "J": "Juliana","WI": "Willian","MI": "Minoru",
-			       "T": "Tatiana","R": "Rosana","JR": "Junior"
-			     };
+		
 			
 			     let vendedores = {};
 			     let companhias = {};
@@ -579,9 +610,8 @@
 			     snapshots.forEach((snapshot, index) => {
 			       snapshot.forEach(doc => {
 			         const d = doc.data();
-			
-			         const letra = (d.letra || "").toUpperCase().trim();
-			         const nome = nomes[letra] || letra;
+					 const letra = (d.letra || "").toUpperCase().trim();
+					 const nome = normalizarVendedor(d.letra);
 			       if (
 			         filtroDash &&
 			         !nome.toUpperCase().includes(filtroDash) &&
@@ -820,11 +850,11 @@
 			           const d = doc.data();
 			
 			           const letra = (d.letra || "").toUpperCase().trim();
-			           const nome = (nomesVendedores[letra] || letra).toUpperCase();
+					   const nome = normalizarVendedor(d.letra);
 			
 			           if (filtro && !nome.includes(filtro) && !letra.includes(filtro)) return;
 			
-			           const vendedor = nomesVendedores[letra] || letra || "Sem vendedor";
+			           const vendedor = normalizarVendedor(d.letra);
 			
 			           const valor = parseNumero(d.valor);
 			           const comissao = parseNumero(d.comissao);
@@ -984,7 +1014,7 @@
 			  let html = "";
 			
 			  docs.forEach(d => {
-			    const letra = (d.letra || "").toUpperCase().trim();
+			    const letra = normalizarVendedor(d.letra);
 			
 			    // filtros
 			       const nomesVendedores = {
@@ -999,7 +1029,7 @@
 			         "JR": "JUNIOR"
 			       };
 			
-			       const nomeVendedor = (nomesVendedores[letra] || letra).toUpperCase();
+			       const nomeVendedor = letra;
 			
 			       if (
 			         filtroVendedor &&
@@ -1198,9 +1228,9 @@
 			      nome: nome.value,
 			      comissao: parseNumero(comissao.value),
 			      valor: parseNumero(valor.value),
-			      letra: letra.value,
-			      companhia: companhia.value,
-			      ramo: ramo.value,
+			      letra: normalizarVendedor(letra.value),
+			      companhia: companhia.value.toUpperCase().trim(),
+			      ramo: ramo.value.toUpperCase().trim(),
 			      ano: ano,
 			      mes: mes,
 			      criadoEm: Date.now()
@@ -1431,17 +1461,7 @@
 			         for (let i = 0; i < json.length; i++) {
 			           const linha = json[i];
 			
-			           let produtor = (linha.PRODUTOR || "").toUpperCase().trim();
-			
-			           if (produtor === "PAULINO") produtor = "P";
-			           if (produtor === "EDUARDO") produtor = "E";
-			           if (produtor === "SUELI") produtor = "S";
-			           if (produtor === "JULIANA") produtor = "J";
-			           if (produtor === "WILLIAN") produtor = "WI";
-			           if (produtor === "MINORU") produtor = "MI";
-			           if (produtor === "ROSANA") produtor = "R";
-			           if (produtor === "JUNIOR") produtor = "JR";
-			           if (produtor === "TATIANA") produtor = "T";
+			           let produtor = normalizarVendedor(linha.PRODUTOR);
 			
 			           const refDoc = doc(caminhoImport, crypto.randomUUID());
 			
