@@ -264,7 +264,28 @@
 					<input id="valor" placeholder="Valor Líquido">
 					<input id="letra" placeholder="Inicial Vendedor">
 					<input id="ramo" placeholder="Ramo">
-					<input id="companhia" placeholder="Companhia">
+					<input
+					    id="companhia"
+					    list="listaCompanhias"
+					    placeholder="Companhia"
+					    autocomplete="off"
+					>
+					
+					<datalist id="listaCompanhias">
+					    <option value="PORTO">
+					    <option value="TOKIO MARINE">
+					    <option value="HDI">
+					    <option value="AZUL">
+					    <option value="MAPFRE">
+					    <option value="BRADESCO">
+					    <option value="ALLIANZ">
+					    <option value="LIBERTY">
+					    <option value="SOMPO">
+					    <option value="SUHAI">
+					    <option value="YELUM">
+						<option value="ALIRO">
+						<option value="ZURICH">
+					</datalist>
 					<button onclick="salvar()">Salvar</button>
 				</div>
 				<!-- Tabela -->
